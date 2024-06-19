@@ -7,7 +7,7 @@ POST http://localhost:3000/events
 Content-Type: application/json
 
 {
-    "name": "Novo Evento 2",
+    "name": "Novo Evento",
     "date": "2024-06-29T14:00:00.00",
     "description": "Descricao do evento",
     "price": 100
@@ -24,7 +24,7 @@ PATCH http://localhost:3000/events/{{eventId}}
 Content-Type: application/json
 
 {
-    "name": "Novo evento 999",
+    "name": "Evento atualizado",
     "date": "2024-06-29T14:00:00.00",
     "description": "Descricao do evento",
     "price": 100
@@ -32,3 +32,30 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:3000/events/{{eventId}}
+
+
+###
+GET http://localhost:3000/events/{{eventId}}/spots
+
+###
+# @name createSpot
+POST http://localhost:3000/events/{{eventId}}/spots
+Content-Type: application/json
+
+{
+  "name": "Teste de nome"
+}
+
+###
+@spotId = {{ createSpot.response.body.id }}
+
+###
+PATCH http://localhost:3000/events/{{eventId}}/spots/{{spotId}}
+Content-Type: application/json
+
+{
+  "name": "A1"
+}
+
+###
+DELETE http://localhost:3000/events/{{eventId}}/spots/{{spotId}}
