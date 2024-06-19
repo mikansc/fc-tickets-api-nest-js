@@ -1,0 +1,30 @@
+
+GET http://localhost:3000/events
+
+###
+POST http://localhost:3000/events
+Content-Type: application/json
+
+{
+    "name": "Novo Evento",
+    "date": "2024-06-29T14:00:00.00",
+    "description": "Descricao do evento",
+    "price": 100
+}
+
+###
+GET http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
+
+###
+PATCH http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
+Content-Type: application/json
+
+{
+    "name": "Novo evento",
+    "date": "2024-06-29T14:00:00.00",
+    "description": "Descricao do evento",
+    "price": 100
+}
+
+###
+DELETE http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
