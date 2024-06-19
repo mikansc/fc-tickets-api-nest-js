@@ -2,29 +2,33 @@
 GET http://localhost:3000/events
 
 ###
+# @name createEvent
 POST http://localhost:3000/events
 Content-Type: application/json
 
 {
-    "name": "Novo Evento",
+    "name": "Novo Evento 2",
     "date": "2024-06-29T14:00:00.00",
     "description": "Descricao do evento",
     "price": 100
 }
 
 ###
-GET http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
+@eventId = {{ createEvent.response.body.id }}
 
 ###
-PATCH http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
+GET http://localhost:3000/events/{{eventId}}
+
+###
+PATCH http://localhost:3000/events/{{eventId}}
 Content-Type: application/json
 
 {
-    "name": "Novo evento",
+    "name": "Novo evento 999",
     "date": "2024-06-29T14:00:00.00",
     "description": "Descricao do evento",
     "price": 100
 }
 
 ###
-DELETE http://localhost:3000/events/b1cbbc3d-63bd-4af5-b3a3-64ecf0e7ddaf
+DELETE http://localhost:3000/events/{{eventId}}
