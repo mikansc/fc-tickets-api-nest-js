@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReserveSpotDto } from './dto/reserve-spot.dto';
-import { SpotStatus, TicketStatus } from '@prisma/client';
+import { Prisma, SpotStatus, TicketStatus } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class EventsService {
@@ -60,38 +65,63 @@ export class EventsService {
       throw new Error(`Spots ${notFoundSpotsName.join(', ')} not found.`);
     }
 
-    await this.prismaService.reservationHistory.createMany({
-      data: spots.map((spot) => ({
-        spotId: spot.id,
-        ticketKind: dto.ticket_kind,
-        email: dto.email,
-        status: TicketStatus.reserved,
-      })),
-    });
+    try {
+      const tickets = await this.prismaService.$transaction(
+        async (prismaTransaction) => {
+          await prismaTransaction.reservationHistory.createMany({
+            data: spots.map((spot) => ({
+              spotId: spot.id,
+              ticketKind: dto.ticket_kind,
+              email: dto.email,
+              status: TicketStatus.reserved,
+            })),
+          });
 
-    await this.prismaService.spot.updateMany({
-      where: {
-        id: {
-          in: spots.map((spot) => spot.id),
+          await prismaTransaction.spot.updateMany({
+            where: {
+              id: {
+                in: spots.map((spot) => spot.id),
+              },
+            },
+            data: {
+              status: SpotStatus.reserved,
+            },
+          });
+
+          const persistedTickets = await Promise.all(
+            spots.map((spot) =>
+              prismaTransaction.ticket.create({
+                data: {
+                  email: dto.email,
+                  spotId: spot.id,
+                  ticketKind: dto.ticket_kind,
+                },
+              }),
+            ),
+          );
+
+          return persistedTickets;
         },
-      },
-      data: {
-        status: SpotStatus.reserved,
-      },
-    });
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, // ler registros que já foram comitados, importane quando tem update many (só quero lidar com dados definitivos no banco)
+        },
+      );
 
-    const tickets = await Promise.all(
-      spots.map((spot) =>
-        this.prismaService.ticket.create({
-          data: {
-            email: dto.email,
-            spotId: spot.id,
-            ticketKind: dto.ticket_kind,
-          },
-        }),
-      ),
-    );
+      return tickets;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2002': // unique constraint violation
+          case 'P2034': // transaction conflict
+            throw new ForbiddenException('Some spots are already reserved');
+          default:
+            throw new InternalServerErrorException(
+              'Something went wrong on creating spot',
+            );
+        }
+      }
 
-    return tickets;
+      throw error;
+    }
   }
 }

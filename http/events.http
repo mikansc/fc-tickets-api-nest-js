@@ -43,19 +43,27 @@ POST http://localhost:3000/events/{{eventId}}/spots
 Content-Type: application/json
 
 {
-  "name": "Teste de nome"
+  "name": "Z1"
 }
-
-###
-@spotId = {{ createSpot.response.body.id }}
 
 ###
 PATCH http://localhost:3000/events/{{eventId}}/spots/{{spotId}}
 Content-Type: application/json
 
 {
-  "name": "A1"
+  "name": "A3"
 }
 
 ###
-DELETE http://localhost:3000/events/{{eventId}}/spots/{{spotId}}
+@spotName = {{ createSpot.response.body.name }}
+@spotId = {{createSpot.response.body.id}}
+
+###
+POST http://localhost:3000/events/{{eventId}}/reserve
+Content-Type: application/json
+
+{
+  "spots": ["{{spotName}}"],
+  "ticket_kind": "full",
+  "email": "teste@teste.com"
+}
