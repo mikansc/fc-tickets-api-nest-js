@@ -10,8 +10,8 @@ services:
     image: mysql:8.0.30
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: tickettotal
     ports:
       - 3306:3306
     volumes:
-      - ./.docker/dbdata:/var/lib/mysql
+      - ./.docker/mysql:/docker-entrypoint-initdb.d
+      # - ./.docker/dbdata:/var/lib/mysql
