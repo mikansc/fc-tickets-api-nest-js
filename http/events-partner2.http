@@ -1,0 +1,69 @@
+
+GET http://localhost:3001/events
+
+###
+# @name createEvent
+POST http://localhost:3001/events
+Content-Type: application/json
+
+{
+    "name": "Novo Evento",
+    "date": "2024-06-29T14:00:00.00",
+    "description": "Descricao do evento",
+    "price": 100
+}
+
+###
+@eventId = {{ createEvent.response.body.id }}
+
+###
+GET http://localhost:3001/events/{{eventId}}
+
+###
+PATCH http://localhost:3001/events/{{eventId}}
+Content-Type: application/json
+
+{
+    "name": "Evento atualizado",
+    "date": "2024-06-29T14:00:00.00",
+    "description": "Descricao do evento",
+    "price": 100
+}
+
+###
+DELETE http://localhost:3001/events/{{eventId}}
+
+
+###
+GET http://localhost:3001/events/{{eventId}}/spots
+
+###
+# @name createSpot
+POST http://localhost:3001/events/{{eventId}}/spots
+Content-Type: application/json
+
+{
+  "name": "Z1"
+}
+
+###
+PATCH http://localhost:3001/events/{{eventId}}/spots/{{spotId}}
+Content-Type: application/json
+
+{
+  "name": "A3"
+}
+
+###
+@spotName = {{ createSpot.response.body.name }}
+@spotId = {{createSpot.response.body.id}}
+
+###
+POST http://localhost:3001/events/{{eventId}}/reserve
+Content-Type: application/json
+
+{
+  "spots": ["{{spotName}}"],
+  "ticket_kind": "full",
+  "email": "teste@teste.com"
+}
